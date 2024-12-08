@@ -13,7 +13,7 @@ fn read_file(filename: &str) -> String {
 
 fn main() {
     let input = read_file("input.txt");
-    part2(&input);
+    part1(&input);
 }
 
 #[allow(dead_code)]
@@ -30,10 +30,12 @@ fn part1(input: &str) {
     v1.sort();
     v2.sort();
 
-    let mut diff = 0;
-    for (x, y) in v1.iter().zip(v2) {
-        diff += (x - y).abs();
-    }
+    //let mut diff = 0;
+    //for (x, y) in v1.iter().zip(v2) {
+    //    diff += (x - y).abs();
+    //}
+
+    let diff = v1.iter().zip(v2).map(|(x, y)| (x-y).abs()).sum::<i32>();
     println!("Part1: {}", diff);
 }
 
