@@ -136,6 +136,103 @@ impl Maze {
         }
     }
 
+    fn check_path_backwards(&self, path_score: isize, pos: (isize, isize), dir_id: usize, curr_path: &mut Vec<(isize, isize)>, all_paths: &mut Vec<Vec<(isize, isize)>>) {
+        let path_score = path_score - 1;
+        let opposite_dir_id = (dir_id + N_DIR/2) % N_DIR;
+
+        let v = &DIR_ID_TO_V[opposite_dir_id];
+        let new_pos = (pos.0 + v.0, pos.1 + v.1);
+
+        if new_pos.0 == self.start_pos.0 && new_pos.1 == self.start_pos.1 {
+            all_paths.push(curr_path.clone());
+            return;
+        }
+
+        curr_path.push(new_pos);
+
+        match self.tiles.get(new_pos.1 as usize).unwrap().get(new_pos.0 as usize).unwrap() {
+            Tile::Space(path_scores) => {
+                if path_score == path_scores[dir_id] {
+                    self.check_path_backwards(path_score, new_pos, dir_id, &mut curr_path.clone(), all_paths);
+                }
+
+                let dir_id_rotated_left = (dir_id + 1) % N_DIR;
+                if path_score - ROTATE_COST == path_scores[dir_id_rotated_left] {
+                    self.check_path_backwards(path_score - ROTATE_COST, new_pos, dir_id_rotated_left, &mut curr_path.clone(), all_paths);
+                }
+
+                let dir_id_rotated_right = (dir_id + N_DIR - 1) % N_DIR;
+                if path_score - ROTATE_COST == path_scores[dir_id_rotated_right] {
+                    self.check_path_backwards(path_score - ROTATE_COST, new_pos, dir_id_rotated_right, &mut curr_path.clone(), all_paths);
+                }
+            },
+            Tile::Wall => (),
+        }
+
+    }
+
+    fn get_all_best_paths(&self) -> Vec<Vec<(isize, isize)>> {
+        let mut all_paths = vec![];
+
+        let min_path_score = self.get_min_path_score();
+        let dir_id = NORTH_ID;
+
+        let mut curr_path = vec![];
+        self.check_path_backwards(min_path_score, self.end_pos, dir_id, &mut curr_path, &mut all_paths);
+
+        return all_paths;
+    }
+
+    fn count_all_unique_tiles_on_best_paths(&self) -> usize {
+        let all_paths = self.get_all_best_paths();
+
+        let mut all_tiles = vec![self.start_pos, self.end_pos];
+
+        for path in all_paths {
+            all_tiles.append(&mut path.clone());
+        }
+        all_tiles.sort();
+        all_tiles.dedup();
+        return all_tiles.len();
+    }
+
+    fn print_all_best_paths(&self) {
+        let all_paths = self.get_all_best_paths();
+
+        for (i, path) in all_paths.iter().enumerate() {
+            println!("Path #{} of length: {}", i, path.len());
+            for (y, tile_row) in self.tiles.iter().enumerate() {
+                let s : String = 
+                    if y as isize == self.end_pos.1 || y as isize == self.start_pos.1 {
+                        tile_row.iter().enumerate().map(|(x, t)|
+                            if (x as isize, y as isize) == self.start_pos {
+                                'S'
+                            } else if (x as isize, y as isize) == self.end_pos {
+                                'E'
+                            }
+                            else {
+                                if path.contains(&(x as isize, y as isize)) {
+                                    'O'
+                                } else {
+                                    match t { 
+                                        Tile::Space(_) => '.',
+                                        Tile::Wall => '#',
+                                    }
+                                }
+                            }
+                            ).collect()
+                    } else {
+                        tile_row.iter().enumerate().map(|(x, t)|
+                            if path.contains(&(x as isize, y as isize)) {
+                                'O'
+                            } else {
+                                match t { Tile::Space(_) => '.', Tile::Wall => '#',}
+                            }).collect()
+                    };
+                println!("{}", s);
+            }
+        }
+    }
 }
 
 #[allow(dead_code)]
@@ -153,6 +250,15 @@ fn part1(input: &str) {
 
 #[allow(dead_code)]
 fn part2(input: &str) {
+    let mut maze = parse_input(input);
+    //println!("{}", maze);
+    maze.remove_dead_ends();
+    maze.fill_path_score(0, maze.start_pos, EAST_ID);
+
+    //maze.print_all_best_paths();
+    let result = maze.count_all_unique_tiles_on_best_paths();
+
+    println!("Part2: {}", result);
 }
 
 fn parse_input(input: &str) -> Maze {
