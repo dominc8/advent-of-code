@@ -48,22 +48,6 @@ struct Maze {
 }
 
 impl Maze {
-    // start from end_pos and set value for some arbitrary amount of tiles from end_pos to be
-    // score from it to the end, if already written write smaller value, maybe it will make it
-    // faster so in finding smaller path you can faster drop longer paths
-    //fn find_min_path_score(&self) -> usize {
-    //    let mut min_score : Option<usize> = None;
-
-    //    let path_tiles = vec![self.start_pos];
-
-    //    self.check_path(&mut min_score, 0, path_tiles.clone(), self.start_pos, (1, 0));
-    //    self.check_path(&mut min_score, 1000, path_tiles.clone(), self.start_pos, (0, -1));
-    //    self.check_path(&mut min_score, 1000, path_tiles.clone(), self.start_pos, (0, 1));
-    //    self.check_path(&mut min_score, 2000, path_tiles.clone(), self.start_pos, (-1, 0));
-
-    //    return min_score.unwrap();
-    //}
-
     fn remove_dead_ends(&mut self) {
         loop {
             let mut dead_ends_positions : Vec<(isize, isize)> = vec![];
@@ -120,40 +104,6 @@ impl Maze {
             }
         }
     }
-
-    //fn check_path(&self, min_score: &mut Option<usize>, path_score: usize, path_tiles: Vec<(isize, isize)>, pos: (isize, isize), v: (isize, isize)) {
-    //    let path_score = path_score + 1;
-    //    let new_pos = (pos.0 + v.0, pos.1 + v.1);
-    //    let mut path_tiles = path_tiles;
-
-    //    if path_tiles.contains(&new_pos) {
-    //        return;
-    //    }
-
-    //    if min_score.is_some_and(|score| score < path_score) {
-    //        return;
-    //    }
-
-    //    path_tiles.push(new_pos.clone());
-
-    //    //println!("path_score={}, pos={:?}", path_score, new_pos);
-    //    if new_pos.0 == self.end_pos.0 && new_pos.1 == self.end_pos.1 {
-    //        println!("Found path with score {}", path_score);
-    //        *min_score = Some(path_score);
-    //        return;
-    //    }
-    //    match self.tiles.get(new_pos.1 as usize).unwrap().get(new_pos.0 as usize).unwrap() {
-    //        Tile::Space => {
-    //            let v0 = v;
-    //            self.check_path(min_score, path_score, path_tiles.clone(), new_pos, v0);
-    //            let v1 = (v.1, v.0);
-    //            self.check_path(min_score, path_score + 1000, path_tiles.clone(), new_pos, v1);
-    //            let v2 = (-v.1, -v.0);
-    //            self.check_path(min_score, path_score + 1000, path_tiles.clone(), new_pos, v2);
-    //        },
-    //        Tile::Wall => (),
-    //    }
-    //}
 
     fn fill_path_score(&mut self, path_score: isize, pos: (isize, isize), dir_id: usize) {
         let path_score = path_score + 1;
